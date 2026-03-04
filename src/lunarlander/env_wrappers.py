@@ -9,16 +9,18 @@ from lunarlander.reward_model import RewardModel
 
 class LearnedRewardWrapper(gym.Wrapper):
     """
-    Replaces the environment's step reward with a score from a learned RewardModel.
+    Mixes the environment's reward with a learned RewardModel score.
 
-    The reward model expects a feature vector extracted from (obs, action).
-    Features: concatenation of flattened obs and one-hot action (for discrete envs).
+    Total reward = env_reward + scale * learned_reward
+
+    Keeping the env reward prevents reward hacking — the agent can't exploit
+    the reward model's weaknesses while ignoring real physics.
 
     Args:
         env: the base gymnasium environment
         reward_model: trained RewardModel instance
         device: torch device for inference
-        scale: multiply learned reward by this factor (default 1.0)
+        scale: weight on the learned reward term (default 0.5)
     """
 
     def __init__(
@@ -26,7 +28,7 @@ class LearnedRewardWrapper(gym.Wrapper):
         env: gym.Env,
         reward_model: RewardModel,
         device: str = "cpu",
-        scale: float = 1.0,
+        scale: float = 0.5,
     ):
         super().__init__(env)
         self.reward_model = reward_model
@@ -63,4 +65,7 @@ class LearnedRewardWrapper(gym.Wrapper):
         with torch.no_grad():
             learned_reward = self.reward_model(feat).item() * self.scale
 
-        return obs, learned_reward, terminated, truncated, info
+        mixed_reward = env_reward + learned_reward
+        info["learned_reward"] = learned_reward
+
+        return obs, mixed_reward, terminated, truncated, info
