@@ -1,0 +1,13 @@
+data/
+checkpoints/
+*.db
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+CLAUDE.md
+*.egg-info/
+dist/
+build/
+.DS_Store

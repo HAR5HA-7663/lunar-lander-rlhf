@@ -1,0 +1,48 @@
+#!/bin/sh
+# ----------------------------------------------------------------------------
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License. You may obtain a copy of the License at
+#   https://www.apache.org/licenses/LICENSE-2.0
+# ----------------------------------------------------------------------------
+
+# OS specific support.
+cygwin=false
+darwin=false
+mingw=false
+case "$(uname)" in
+  CYGWIN*) cygwin=true ;;
+  Darwin*)  darwin=true ;;
+  MINGW*)   mingw=true ;;
+esac
+
+## Path to your maven local repository
+MAVEN_HOME="${MAVEN_HOME:-$HOME/.m2}"
+MAVEN_USER_HOME="${MAVEN_USER_HOME:-$MAVEN_HOME}"
+MAVEN_WRAPPER_JAR="$MAVEN_USER_HOME/wrapper/dists/apache-maven-3.9.6-bin/maven-wrapper.jar"
+
+# Download wrapper jar if not present
+if [ ! -f "$MAVEN_WRAPPER_JAR" ]; then
+  WRAPPER_URL="https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.2.0/maven-wrapper-3.2.0.jar"
+  mkdir -p "$(dirname "$MAVEN_WRAPPER_JAR")"
+  echo "Downloading Maven Wrapper..."
+  if command -v curl > /dev/null; then
+    curl -fsSL -o "$MAVEN_WRAPPER_JAR" "$WRAPPER_URL"
+  elif command -v wget > /dev/null; then
+    wget -q -O "$MAVEN_WRAPPER_JAR" "$WRAPPER_URL"
+  else
+    echo "ERROR: Neither curl nor wget found. Install one of them." >&2
+    exit 1
+  fi
+fi
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+exec java \
+  -classpath "$MAVEN_WRAPPER_JAR" \
+  "-Dmaven.multiModuleProjectDirectory=$SCRIPT_DIR" \
+  org.apache.maven.wrapper.MavenWrapperMain \
+  -f "$SCRIPT_DIR/pom.xml" \
+  "$@"
